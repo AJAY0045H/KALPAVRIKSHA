@@ -106,12 +106,16 @@ int evaluateExpression(char *expression){
             continue;
         }
         else if(isdigit(expression[idx])){
-            int num = 0;
-            while(isdigit(expression[idx])){
-                num = num * 10 + expression[idx] - '0';
+            int number = 0;
+            while(isdigit(expression[idx]) || isspace(expression[idx])){
+                if(isspace(expression[idx])){
+                    idx++;
+                    continue;
+                }
+                number = number * 10 + expression[idx] - '0';
                 idx++;
             }
-            pushNumber(num);
+            pushNumber(number);
             continue;
         }
         else if(strchr("+-*/",expression[idx])){
@@ -149,6 +153,6 @@ int main(){
     fgets(expression,sizeof(expression),stdin);
 
     int result = evaluateExpression(expression);
-    printf("result= %d",result);
+    printf("result = %d",result);
     return 0;
 }

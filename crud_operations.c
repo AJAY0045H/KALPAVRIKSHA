@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <limits.h>
 #include <stdbool.h>
 
 #define userFile "users.txt"
@@ -21,84 +22,134 @@ typedef enum CrudOperation {
 } CrudOperation;
 
 FILE* openFile(const char *filename, const char *mode);
-void closeFile(FILE *filePtr);
+void closeFile(FILE *filePointer);
 void createUser();
 void displayUsers();
 void updateUser();
 void deleteUser();
+int readInteger(const char *prompt, int *value, int minimum, int maximum);
+int readName(const char *prompt, char *name);
 
 FILE* openFile(const char *filename, const char *mode) {
-    FILE *filePtr = fopen(filename, mode);
-    if (filePtr == NULL) {
+    FILE *filePointer = fopen(filename, mode);
+    if (filePointer == NULL) {
         printf("Unable to open file: %s\n", filename);
     }
-    return filePtr;
+    return filePointer;
 }
 
-void closeFile(FILE *filePtr) {
-    if (filePtr != NULL) {
-        fclose(filePtr);
+void closeFile(FILE *filePointer) {
+    if (filePointer != NULL) {
+        fclose(filePointer);
     }
+}
+
+int readInteger(const char *prompt, int *value, int minimum, int maximum) {
+    int extra;
+    printf("%s", prompt);
+    if (scanf("%d", value) != 1 || *value < minimum || *value > maximum) {
+        while ((extra = getchar()) != '\n' && extra != EOF) {
+        }
+        printf("Invalid input. Please enter a number between %d and %d.\n",
+               minimum, maximum);
+        return 0;
+    }
+
+    extra = getchar();
+    if (extra != '\n') {
+        while ((extra = getchar()) != '\n' && extra != EOF) {
+        }
+        printf("Invalid input. Please enter one number only.\n");
+        return 0;
+    }
+    return 1;
+}
+
+int readName(const char *prompt, char *name) {
+    int extra;
+    printf("%s", prompt);
+    if (scanf("%99s", name) != 1) {
+        while ((extra = getchar()) != '\n' && extra != EOF) {
+        }
+        printf("Invalid name.\n");
+        return 0;
+    }
+
+    extra = getchar();
+    if (extra != '\n') {
+        while ((extra = getchar()) != '\n' && extra != EOF) {
+        }
+        printf("Invalid name. Use one word with at most 99 characters.\n");
+        return 0;
+    }
+    return 1;
 }
 
 void createUser() {
-    FILE *filePtr = openFile(userFile, "a");
-    if (filePtr == NULL) return;
-
     User newUser;
-    printf("Enter User ID: ");
-    scanf("%d", &newUser.id);
-    printf("Enter User Name: ");
-    scanf("%s", newUser.name);
-    printf("Enter User Age: ");
-    scanf("%d", &newUser.age);
+    if (!readInteger("Enter User ID: ", &newUser.id, 1, INT_MAX) ||
+        !readName("Enter User Name: ", newUser.name) ||
+        !readInteger("Enter User Age: ", &newUser.age, 1, 150)) {
+        printf("User was not added.\n");
+        return;
+    }
 
-    fprintf(filePtr, "%d %s %d\n", newUser.id, newUser.name, newUser.age);
-    closeFile(filePtr);
+    FILE *filePointer = openFile(userFile, "a");
+    if (filePointer == NULL) return;
+
+    fprintf(filePointer, "%d %s %d\n", newUser.id, newUser.name, newUser.age);
+    closeFile(filePointer);
 
     printf("User added successfully.\n");
 }
 
 void displayUsers() {
-    FILE *filePtr = openFile(userFile, "r");
-    if (filePtr == NULL) return;
+    FILE *filePointer = openFile(userFile, "r");
+    if (filePointer == NULL) return;
 
     User user;
     printf("\n------ User List ------\n");
-    while (fscanf(filePtr, "%d %s %d", &user.id, user.name, &user.age) == 3) {
+    while (fscanf(filePointer, "%d %s %d", &user.id, user.name, &user.age) == 3) {
         printf("ID: %d | Name: %s | Age: %d\n", user.id, user.name, user.age);
     }
-    closeFile(filePtr);
+    closeFile(filePointer);
 }
 
 void updateUser() {
-    FILE *filePtr = openFile(userFile, "r");
-    if (filePtr == NULL) return;
+    FILE *filePointer = openFile(userFile, "r");
+    if (filePointer == NULL) return;
 
     FILE *tempPtr = openFile(tempFile, "w");
     if (tempPtr == NULL) {
-        closeFile(filePtr);
+        closeFile(filePointer);
         return;
     }
 
     int userId;
     bool found = false;
-    printf("Enter User ID to Update: ");
-    scanf("%d", &userId);
+    if (!readInteger("Enter User ID to Update: ", &userId, 1, INT_MAX)) {
+        closeFile(filePointer);
+        closeFile(tempPtr);
+        remove(tempFile);
+        return;
+    }
 
     User user;
-    while (fscanf(filePtr, "%d %s %d", &user.id, user.name, &user.age) == 3) {
+    while (fscanf(filePointer, "%d %s %d", &user.id, user.name, &user.age) == 3) {
         if (user.id == userId) {
             found = true;
-            printf("Enter New User Name: ");
-            scanf("%s", user.name);
-            printf("Enter New User Age: ");
-            scanf("%d", &user.age);
+            if (!readName("Enter New User Name: ", user.name) ||
+                !readInteger("Enter New User Age: ", &user.age, 1, 150)) {
+                closeFile(filePointer);
+                closeFile(tempPtr);
+                remove(tempFile);
+                return;
+            }
         }
         fprintf(tempPtr, "%d %s %d\n", user.id, user.name, user.age);
     }
 
-    closeFile(filePtr);
+    closeFile(filePointer);
     closeFile(tempPtr);
     remove(userFile);
     rename(tempFile, userFile);
@@ -110,22 +161,26 @@ void updateUser() {
 }
 
 void deleteUser() {
-    FILE *filePtr = openFile(userFile, "r");
-    if (filePtr == NULL) return;
+    FILE *filePointer = openFile(userFile, "r");
+    if (filePointer == NULL) return;
 
     FILE *tempPtr = openFile(tempFile, "w");
     if (tempPtr == NULL) {
-        closeFile(filePtr);
+        closeFile(filePointer);
         return;
     }
 
     int userId;
     bool found = false;
-    printf("Enter User ID to Delete: ");
-    scanf("%d", &userId);
+    if (!readInteger("Enter User ID to Delete: ", &userId, 1, INT_MAX)) {
+        closeFile(filePointer);
+        closeFile(tempPtr);
+        remove(tempFile);
+        return;
+    }
 
     User user;
-    while (fscanf(filePtr, "%d %s %d", &user.id, user.name, &user.age) == 3) {
+    while (fscanf(filePointer, "%d %s %d", &user.id, user.name, &user.age) == 3) {
         if (user.id == userId) {
             found = true;
             continue;
@@ -133,7 +188,7 @@ void deleteUser() {
         fprintf(tempPtr, "%d %s %d\n", user.id, user.name, user.age);
     }
 
-    closeFile(filePtr);
+    closeFile(filePointer);
     closeFile(tempPtr);
     remove(userFile);
     rename(tempFile, userFile);
@@ -158,8 +213,9 @@ int main() {
         printf("%d. Update User by ID\n", UPDATE_USER);
         printf("%d. Delete User by ID\n", DELETE_USER);
         printf("%d. Exit\n", EXIT_PROGRAM);
-        printf("Enter your choice: ");
-        scanf("%d", &userChoice);
+        if (!readInteger("Enter your choice: ", &userChoice, ADD_USER, EXIT_PROGRAM)) {
+            continue;
+        }
 
         CrudOperation operation = (CrudOperation)userChoice;
 
@@ -186,3 +242,4 @@ int main() {
     }
 
     return 0;
+}
