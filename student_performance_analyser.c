@@ -16,11 +16,7 @@ char gradeOfStudent(int average);
 void printStars(char grade);
 void printRollNumbers(int rollNumber, student *students);
 
-int checkRollNumberExists(
-    int rollNumber,
-    student *students,
-    int numberOfStudents
-) {
+int checkRollNumberExists(int rollNumber,student *students,int numberOfStudents) {
     for (int index = 0; index < numberOfStudents; index++) {
         if (rollNumber == students[index].rollNumber) {
             return 1;
@@ -59,10 +55,7 @@ int main() {
     scanf("%d", &numberOfStudents);
 
     if (numberOfStudents <= 0 || numberOfStudents > maxStudents) {
-        printf(
-            "Number of students should be greater than 0 and less than or equal to %d",
-            maxStudents
-        );
+        printf("Number of students should be greater than 0 and less than or equal to %d",maxStudents);
         return 0;
     }
 
@@ -89,9 +82,9 @@ int main() {
 
         students[student].rollNumber = rollNumber;
 
-        char name[100];
+        char name[200];
         while(1){
-            scanf("%99[^0-9]", name);
+            scanf("%199[^0-9]", name);
             trimName(name);
             if(strlen(name) == 0) {
                 printf("Name cannot be empty\nEnter again\n");
@@ -119,11 +112,7 @@ int main() {
     }
 
     for (int student = 0; student < numberOfStudents; student++) {
-        printf(
-            "Roll: %d\nName: %s\n",
-            students[student].rollNumber,
-            students[student].name
-        );
+        printf("Roll: %d\nName: %s\n",students[student].rollNumber,students[student].name);
 
         int totalMark = totalMarks(students[student]);
         printf("Total: %d\n", totalMark);
