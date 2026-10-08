@@ -1,3 +1,9 @@
+/*
+time complexity: O(n^2+nL)+O(nL)+O(n)
+O(n^2) for checking roll number exists already or not
+O(nL) for trimming name(number of students * length of name)
+O(n) for printing roll numbers
+*/
 #include <stdio.h>
 #include <string.h>
 
@@ -16,6 +22,7 @@ char gradeOfStudent(int average);
 void printStars(char grade);
 void printRollNumbers(int rollNumber, student *students);
 
+//O(n)
 int checkRollNumberExists(int rollNumber,student *students,int numberOfStudents) {
     for (int index = 0; index < numberOfStudents; index++) {
         if (rollNumber == students[index].rollNumber) {
@@ -29,7 +36,7 @@ int checkRollNumberExists(int rollNumber,student *students,int numberOfStudents)
 int markIsInRange(int mark) {
     return (mark >= 0 && mark <= 100) ? 1 : 0;
 }
-
+//O(L) where L is the length of the name
 void trimName(char *name) {
     int start = 0;
     int end = strlen(name) - 1;
@@ -85,7 +92,7 @@ int main() {
         char name[200];
         while(1){
             scanf("%199[^0-9]", name);
-            trimName(name);
+            trimName(name);//O(NL) where N is the number of students and L is the length of the name
             if(strlen(name) == 0) {
                 printf("Name cannot be empty\nEnter again\n");
                 continue;
@@ -131,7 +138,7 @@ int main() {
         printStars(grade);
         printf("\n");
     }
-
+    //O(N) where N is the number of students
     printf("List of Roll Numbers (via recursion): ");
     printRollNumbers(numberOfStudents, students);
 
