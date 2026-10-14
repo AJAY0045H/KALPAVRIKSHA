@@ -56,16 +56,13 @@ char *getName() {
 
     return name;
 }
-void clearInputBuffer() {
-    int ch;
-    while ((ch = getchar()) != '\n' && ch != EOF);
-}
+
 int main(){
     char *name;
     while(1){
         name = getName();
         if(name == NULL){
-            printf("Memory allocation\n");
+            printf("Memory allocation failed\n");
             return 1;
         }
         if(strlen(name) == 0){
@@ -91,16 +88,9 @@ int main(){
         
     }
 
-    // int ch;
-    // if((ch = getchar()) != EOF){
-    //     clearInputBuffer();
-    // }else{
-    //     ungetc(ch,stdin);
-    // }
-
     int numberOfTickets;
     while(1){
-        int number;
+        int number = getInteger();
         if(scanf("%d",&number) != 1){
             int ch;
             while((ch = getchar()) != '\n' && ch != EOF);
@@ -145,14 +135,16 @@ int main(){
             printf("The options should be\n1 for Standard\n2 for Premium\n3 for Recliner\n");
         }
     }
-    float discount = 0;
 
+    float discount = 0;
     float totalTicketPrice = (ticket_price[ticketCategory] * numberOfTickets);
+    
     if(numberOfTickets >= 5){
         discount = totalTicketPrice * 0.10f;
     }
 
     float discountedTicketPrice = totalTicketPrice - discount;
+    
     printf("Customer: %s\n",name);
     printf("Ticket Category: %s\n",ticket_names[ticketCategory]);
     printf("Tickets: %d\n",numberOfTickets);
