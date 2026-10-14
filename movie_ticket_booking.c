@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
+#include <limits.h>
 
 typedef enum ticket{
     Standard = 1,
@@ -16,12 +17,9 @@ const char* ticket_names[] = {
     "Recliner"
 };
 
-const int ticket_price[] = {
-    0,
-    150,
-    250,
-    400
-};
+const int standardPrice = 150;
+const int premiumPrice = 250;
+const int reclinerPrice = 400;
 
 char *getName() {
     int capacity = 16;
@@ -34,7 +32,7 @@ char *getName() {
         return NULL;
     }
 
-    while ((character = getchar()) != ' ' && character != '\n' && character != EOF) {
+    while ((character = getchar()) != '\n' && character != EOF) {
         
         if (length + 1 >= capacity) {
             capacity *= 2;
@@ -48,15 +46,66 @@ char *getName() {
 
             name = temp;
         }
-
+        if(length == 0 && isspace((unsigned char)character)) continue;
         name[length++] = (char)character;
     }
-
     name[length] = '\0';
-
+    
+    // while(*name == ' '){
+    //     *name++;
+    // }
     return name;
 }
+int getInteger(int *value){
+    int length = 0;
+    int capacity = 20;
+    int character;
 
+    long stringConvertedInteger;
+
+    char *end;
+    char *number = malloc(capacity * sizeof(char));
+    if(number == NULL) return 0;
+
+    //reading all the characters in the input stream
+    while((character = getchar()) != '\n' && character != EOF){
+        if(length + 1 >= capacity){
+            capacity *= 2;
+            char *tempNumber = realloc(number, capacity * sizeof(char));
+            if(tempNumber == NULL){
+                free(number);
+                return 0;
+            }
+            number = tempNumber;
+        }
+        number[length++] = (char)character;
+    }
+    number[length] = '\0';
+
+
+
+    if(strlen(number) == 0){
+        free(number);
+        return -1;
+    } 
+
+    //validating the string if it only contains digits
+    for(int numberIndex = 0; numberIndex < length ; numberIndex++){
+        if(!isdigit((unsigned char)number[numberIndex])){
+            free(number);
+            return -1;
+        }
+    }
+    //converting the string to long and checking the constraints
+    stringConvertedInteger = strtol(number,&end,10);
+    if(stringConvertedInteger < INT_MIN || *end !='\0' || stringConvertedInteger > INT_MAX){
+        free(number);
+        return -1;
+    }
+    *value = (int)stringConvertedInteger;
+    free(number);
+    return 1;
+}
 int main(){
     char *name;
     while(1){
@@ -72,15 +121,15 @@ int main(){
         }
           int valid = 1;
 
-        for (int i = 0; name[i] != '\0'; i++) {
-            if (!isalpha((unsigned char)name[i])) {
+        for (int nameIndex = 0; name[nameIndex] != '\0'; nameIndex++) {
+            if (!isalpha((unsigned char)name[nameIndex])) {
                 valid = 0;
                 break;
             }
         }
 
         if (!valid) {
-            printf("Name must contain alphabets only\n");
+            printf("Name must contain alphabets only and name should not contain any spaces\n");
             free(name);
             continue;
         }
@@ -90,11 +139,16 @@ int main(){
 
     int numberOfTickets;
     while(1){
-        int number = getInteger();
-        if(scanf("%d",&number) != 1){
-            int ch;
-            while((ch = getchar()) != '\n' && ch != EOF);
+        int number;
+        int option = getInteger(&number);
+        if(option == -1){
+            //int ch;
+            //while((ch = getchar()) != '\n' && ch != EOF);
             printf("Enter a valid Integer\n");
+            continue;
+        }
+        if(option == 0){
+            printf("Memory allocation failed\n");
             continue;
         }
         if(number >= 1 && number <= 20){
@@ -109,12 +163,17 @@ int main(){
 
     while(1){
         int category;
-        if(scanf("%d",&category) != 1){
-            int ch;
-            while((ch = getchar()) != '\n' && ch != EOF);
+        int option = getInteger(&category);
+        if(option == -1){
+            //int ch;
+            //while((ch = getchar()) != '\n' && ch != EOF);
             printf("Enter a valid Integer\n");
             continue;
         }
+        if(option == 0){
+            printf("Memory allocation failed\n");
+            continue;
+        }   
         if(category >= 1 && category <= 3){
             switch(category){
                 case 1:
@@ -137,10 +196,25 @@ int main(){
     }
 
     float discount = 0;
-    float totalTicketPrice = (ticket_price[ticketCategory] * numberOfTickets);
+    int price = 0;
+    switch(ticketCategory){
+        case Standard:
+            price = standardPrice;
+            break;
+        case Premium:
+            price = premiumPrice;
+            break;
+        case Recliner:
+            price = reclinerPrice;
+            break;
+        default:
+            printf("Invalid option\n");
+            break;
+    }
+    float totalTicketPrice = (float)(price * numberOfTickets);
     
     if(numberOfTickets >= 5){
-        discount = totalTicketPrice * 0.10f;
+        discount = totalTicketPrice * 0.10;
     }
 
     float discountedTicketPrice = totalTicketPrice - discount;
@@ -150,7 +224,7 @@ int main(){
     printf("Tickets: %d\n",numberOfTickets);
     printf("Subtotal: %.2f\n",totalTicketPrice);
     printf("Discount: %.2f\n",discount);
-    printf("Final Bill: %.2f",discountedTicketPrice);
+    printf("Final Bill: %.2f\n",discountedTicketPrice);
     
     free(name);
     return 0;
