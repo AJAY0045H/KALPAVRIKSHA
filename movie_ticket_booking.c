@@ -89,9 +89,9 @@ int getInteger(int *value){
         return -1;
     } 
 
-    //validating the string if it only contains digits
+    //validating the string if it only contains digits and signs
     for(int numberIndex = 0; numberIndex < length ; numberIndex++){
-        if(!isdigit((unsigned char)number[numberIndex])){
+        if(!isdigit((unsigned char)number[numberIndex]) && number[numberIndex] != '-' && number[numberIndex] != '+'){
             free(number);
             return -1;
         }
