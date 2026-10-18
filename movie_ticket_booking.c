@@ -1,3 +1,5 @@
+//time complexity: O(1) per attempt cost O(100) = O(1)
+//space complexity: O(1)
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
