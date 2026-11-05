@@ -18,13 +18,13 @@ typedef enum{
     WORST_FIT = 3 
 } Strategy;
  
-static unsigned char *memoryPool = NULL;
-static Block *blocks = NULL;
-static int currentBlockLength = 0;
-static int blockCapacity = 4;
-static int poolSize = 0;
-static int nextId = 1;
-static Strategy strategy = FIRST_FIT;
+unsigned char *memoryPool = NULL;
+Block *blocks = NULL;
+int currentBlockLength = 0;
+int blockCapacity = 4;
+int poolSize = 0;
+int nextId = 1;
+Strategy strategy = FIRST_FIT;
  
 void freeBlocks(){
     free(blocks);
